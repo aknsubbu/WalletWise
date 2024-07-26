@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Button, Avatar } from "react-native-paper";
 
+import AvatarClickHandle from "@/components/functions/AvatarClickHandle";
+
 export default function AddExpense() {
   return (
     <SafeAreaView>
@@ -21,6 +23,7 @@ export default function AddExpense() {
           <Avatar.Image
             size={50}
             source={require("../../assets/images/people_icon.png")}
+            onTouchEnd={AvatarClickHandle}
           />
         </View>
       </View>

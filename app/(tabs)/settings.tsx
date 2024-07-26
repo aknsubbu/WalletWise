@@ -79,8 +79,8 @@ export default function SettingsPage() {
             </View>
             <View className="flex flex-grow justify-end items-end mr-5">
               <Switch
-                value={budgetAlertToggle}
-                onValueChange={ToggleBudgetAlertSwitch}
+                value={monthlyReportToggle}
+                onValueChange={ToggleMonthlyReportSwitch}
                 color="#EFA00B"
               />
             </View>

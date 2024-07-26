@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Button, Avatar } from "react-native-paper";
 
+import AvatarClickHandle from "@/components/functions/AvatarClickHandle";
+
 export default function ProfilePage() {
   const [name, setName] = useState("Karthikeyan");
 
@@ -23,6 +25,7 @@ export default function ProfilePage() {
           <Avatar.Image
             size={50}
             source={require("../../assets/images/people_icon.png")}
+            onTouchEnd={AvatarClickHandle}
           />
         </View>
       </View>

@@ -14,6 +14,8 @@ import { Button, Avatar } from "react-native-paper";
 import HomePageChart from "@/components/homePageChart";
 import SpendingsCard from "@/components/SpendingsCard";
 
+import AvatarClickHandle from "@/components/functions/AvatarClickHandle";
+
 const App = () => {
   const [name, setName] = useState("Karthikeyan");
   const [currMonthSpend, setCurrMonthSpend] = useState(54501);
@@ -29,6 +31,7 @@ const App = () => {
           <Avatar.Image
             size={50}
             source={require("../../assets/images/people_icon.png")}
+            onTouchEnd={AvatarClickHandle}
           />
         </View>
       </View>
