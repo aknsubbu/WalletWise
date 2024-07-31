@@ -11,11 +11,16 @@ import {
 } from "react-native";
 import { Button, Avatar } from "react-native-paper";
 import { Switch } from "react-native-paper";
+import { supabase } from "@/lib/supabase";
 
 export default function SettingsPage() {
   const [budgetAlertToggle, setBudgetAlertToggle] = useState(false);
   const [weeklyReportToggle, setWeeklyReportToggle] = useState(false);
   const [monthlyReportToggle, setMonthlyReportToggle] = useState(false);
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+  }
 
   const ToggleBudgetAlertSwitch = () =>
     setBudgetAlertToggle(!budgetAlertToggle);
@@ -86,6 +91,14 @@ export default function SettingsPage() {
             </View>
           </View>
         </View>
+        <Button
+          onPress={signOut}
+          mode="contained"
+          buttonColor="#e83f3f"
+          className="mt-5"
+        >
+          Sign Out
+        </Button>
       </View>
     </SafeAreaView>
   );
