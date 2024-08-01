@@ -10,13 +10,14 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses the device location to determine the eligibility of the user",
-        "NSContactsUsageDescription": "This app uses the user contacts to verify the user before rendering any service"
+        "NSContactsUsageDescription": "This app uses the user contacts to verify the user before rendering any service",
+        "NSCameraUsageDescription": "This app uses the camera to take pictures"
       }
     },
     "android": {
@@ -56,8 +57,7 @@
         "expo-camera",
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
+          "recordAudioAndroid": false
         }
       ]
     ],
