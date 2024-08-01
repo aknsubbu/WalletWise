@@ -93,7 +93,7 @@ export default function Auth() {
           <Button
             className="my-5 rounded-2xl"
             size="large"
-            label={"Sign Out"}
+            label={"Sign Up"}
             backgroundColor={Colors.yellow20}
             onPress={() => signUpWithEmail()}
           />

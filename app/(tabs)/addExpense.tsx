@@ -29,9 +29,29 @@ export default function AddExpense() {
       </View>
       <View className="pt-2 pl-5">
         <View>
-          {/* <Text className="text-white font-bold text-2xl">Spendings</Text> */}
+          <Button
+            icon="file-find"
+            mode="contained"
+            buttonColor="#EFA00B"
+            onPress={() => console.log("Pressed")}
+            className=" rounded-xl mx-1 my-3"
+          >
+            Browse Files
+          </Button>
+        </View>
+        <View>
+          <Button
+            icon="camera"
+            mode="contained"
+            buttonColor="#EFA00B"
+            onPress={() => console.log("Pressed")}
+            className=" rounded-xl mx-1 my-3"
+          >
+            Take a Picture
+          </Button>
         </View>
       </View>
+      <View>{/* manual entry */}</View>
     </SafeAreaView>
   );
 }
