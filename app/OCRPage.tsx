@@ -1,254 +1,184 @@
+import React, { useState, useRef, useEffect } from "react";
+import { Text, TouchableOpacity, View, Image, Platform } from "react-native";
 import { CameraView, CameraProps, useCameraPermissions } from "expo-camera";
-import { useState, useEffect, useRef } from "react";
-import { Text, TouchableOpacity, View, ImageBackground } from "react-native";
-import { Button } from "react-native-paper";
-import { createWorker } from "tesseract.js";
+import MlkitOcr from "react-native-mlkit-ocr";
 
-// Define the props for the CameraPreview component
 interface CameraPreviewProps {
-	photoURI: string;
-	retakePicture: () => void;
-	savePhoto: () => void;
+  photoURI: string;
+  retakePicture: () => void;
+  processPhoto: () => void;
 }
+
+// TODO : Switch the OCR to the backend...
 
 export default function App() {
-	const cameraRef = useRef<CameraView | null>(null);
-	const [facing, setFacing] = useState<CameraProps["facing"]>("back");
-	const [permission, requestPermission] = useCameraPermissions();
-	const [pictureSizes, setPictureSizes] = useState<string[]>([]);
-	const [photoURI, setPhotoURI] = useState<string>("");
-	const [imageText, setImageText] = useState("");
-	const [previewVisible, setPreviewVisible] = useState(false);
+  const cameraRef = useRef<CameraView | null>(null);
+  const [facing, setFacing] = useState<CameraProps["facing"]>("back");
+  const [permission, requestPermission] = useCameraPermissions();
+  const [photoURI, setPhotoURI] = useState<string>("");
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [ocrInProgress, setOcrInProgress] = useState(false);
+  const [mlkitAvailable, setMlkitAvailable] = useState(false);
 
-	async function doOCR() {
-		console.log("doOCR");
-		console.log(photoURI);
-		const worker = await createWorker("eng", 1, {
-			logger: (m: any) => console.log(m),
-		});
-		const {
-			data: { text },
-		} = await worker.recognize(photoURI);
-		console.log(text);
-		setImageText(text);
-		await worker.terminate();
-	}
+  useEffect(() => {
+    const checkMlkitAvailability = async () => {
+      let retries = 0;
+      const maxRetries = 5;
 
-	useEffect(() => {
-		async function getSizes() {
-			if (permission?.granted && cameraRef.current) {
-				const sizes = await cameraRef.current.getAvailablePictureSizesAsync();
-				setPictureSizes(sizes);
-			}
-		}
-		getSizes();
-	}, [permission]);
+      while (retries < maxRetries) {
+        if (MlkitOcr && typeof MlkitOcr.detectFromUri === "function") {
+          console.log("MLKit OCR is available");
+          setMlkitAvailable(true);
+          return;
+        }
+        console.log(
+          `MLKit OCR not available, retrying... (${retries + 1}/${maxRetries})`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
+        retries++;
+      }
 
-	if (!permission) {
-		return <View />;
-	}
+      console.error("MLKit OCR is not available after multiple attempts");
+    };
 
-	if (!permission.granted) {
-		return (
-			<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-				<Text style={{ textAlign: "center" }}>
-					We need your permission to show the camera
-				</Text>
-				<Button onPress={requestPermission}>Grant Permission</Button>
-			</View>
-		);
-	}
+    checkMlkitAvailability();
+  }, []);
 
-	function toggleCameraFacing() {
-		setFacing((current) => (current === "back" ? "front" : "back"));
-	}
+  if (!permission?.granted) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-center mb-4">
+          We need your permission to show the camera
+        </Text>
+        <TouchableOpacity
+          onPress={requestPermission}
+          className="bg-blue-500 px-4 py-2 rounded-md"
+        >
+          <Text className="text-white">Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-	async function takePicture() {
-		const photo = await cameraRef.current?.takePictureAsync();
-		if (photo) {
-			setPhotoURI(photo.uri);
-			setPreviewVisible(true);
-		}
-	}
+  const toggleCameraFacing = () => {
+    setFacing((current) => (current === "back" ? "front" : "back"));
+  };
 
-	const retakePicture = () => {
-		setPhotoURI("");
-		setPreviewVisible(false);
-	};
+  const takePicture = async () => {
+    if (cameraRef.current) {
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+        });
+        if (photo && photo.uri) {
+          console.log("Photo taken:", photo.uri);
+          setPhotoURI(photo.uri);
+          setPreviewVisible(true);
+        } else {
+          console.error("Failed to take photo: photo object or URI is null");
+        }
+      } catch (error) {
+        console.error("Error taking picture:", error);
+      }
+    } else {
+      console.error("Camera ref is null");
+    }
+  };
 
-	const savePhoto = async () => {
-		await doOCR();
-		setPreviewVisible(false);
-	};
+  const retakePicture = () => {
+    setPhotoURI("");
+    setPreviewVisible(false);
+  };
 
-	return (
-		<View style={{ flex: 1, justifyContent: "center" }}>
-			{previewVisible ? (
-				<CameraPreview
-					photoURI={photoURI}
-					retakePicture={retakePicture}
-					savePhoto={savePhoto}
-				/>
-			) : (
-				<CameraView style={{ flex: 1 }} facing={facing} ref={cameraRef}>
-					<View
-						style={{
-							flex: 1,
-							flexDirection: "row",
-							backgroundColor: "transparent",
-							margin: 16,
-							alignItems: "flex-end",
-							justifyContent: "center",
-						}}
-					>
-						<Button onPress={toggleCameraFacing} style={{ margin: 2 }}>
-							Flip Camera
-						</Button>
-						<Button onPress={takePicture} style={{ margin: 2 }}>
-							Take Picture
-						</Button>
-					</View>
-				</CameraView>
-			)}
-			{imageText && <Text style={{ padding: 16 }}>{imageText}</Text>}
-		</View>
-	);
+  const processPhoto = async () => {
+    if (!mlkitAvailable) {
+      console.error("MLKit OCR is not available");
+      return;
+    }
+    setOcrInProgress(true);
+    await doOCR();
+    setOcrInProgress(false);
+    setPreviewVisible(false);
+  };
+
+  const doOCR = async () => {
+    console.log("Starting OCR");
+    console.log("Photo URI:", photoURI);
+
+    if (!photoURI) {
+      console.error("Photo URI is null or empty");
+      return;
+    }
+
+    try {
+      let uri = photoURI;
+      if (Platform.OS === "ios" && !photoURI.startsWith("file://")) {
+        uri = `file://${photoURI}`;
+      }
+
+      const result = await MlkitOcr.detectFromUri(uri);
+      console.log("OCR Result:", result);
+      console.log("OCR completed");
+    } catch (error) {
+      console.error("OCR Error:", error);
+    }
+  };
+
+  return (
+    <View className="flex-1">
+      {previewVisible ? (
+        <CameraPreview
+          photoURI={photoURI}
+          retakePicture={retakePicture}
+          processPhoto={processPhoto}
+        />
+      ) : (
+        <CameraView className="flex-1" facing={facing} ref={cameraRef}>
+          <View className="flex-1 flex-row bg-transparent m-4 items-end justify-center">
+            <TouchableOpacity
+              onPress={toggleCameraFacing}
+              className="bg-blue-500 px-4 py-2 rounded-md mr-2"
+            >
+              <Text className="text-white">Flip Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={takePicture}
+              className="bg-green-500 px-4 py-2 rounded-md ml-2"
+            >
+              <Text className="text-white">Take Picture</Text>
+            </TouchableOpacity>
+          </View>
+        </CameraView>
+      )}
+      {ocrInProgress && (
+        <Text className="p-4 text-center">OCR in progress...</Text>
+      )}
+    </View>
+  );
 }
 
-// CameraPreview component with typed props
-const CameraPreview = ({
-	photoURI,
-	retakePicture,
-	savePhoto,
-}: CameraPreviewProps) => {
-	return (
-		<View style={{ flex: 1 }}>
-			<ImageBackground source={{ uri: photoURI }} style={{ flex: 1 }}>
-				<View style={{ flex: 1, justifyContent: "flex-end", padding: 15 }}>
-					<View
-						style={{ flexDirection: "row", justifyContent: "space-between" }}
-					>
-						<TouchableOpacity
-							onPress={retakePicture}
-							style={{
-								width: 130,
-								height: 40,
-								backgroundColor: "#14274e",
-								alignItems: "center",
-								justifyContent: "center",
-								borderRadius: 4,
-							}}
-						>
-							<Text style={{ color: "#fff", fontSize: 20 }}>Re-take</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							onPress={savePhoto}
-							style={{
-								width: 130,
-								height: 40,
-								backgroundColor: "#14274e",
-								alignItems: "center",
-								justifyContent: "center",
-								borderRadius: 4,
-							}}
-						>
-							<Text style={{ color: "#fff", fontSize: 20 }}>Get Data</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</ImageBackground>
-		</View>
-	);
+const CameraPreview: React.FC<CameraPreviewProps> = ({
+  photoURI,
+  retakePicture,
+  processPhoto,
+}) => {
+  return (
+    <View className="flex-1">
+      <Image source={{ uri: photoURI }} className="flex-1" />
+      <View className="flex-row justify-between p-4 bg-black bg-opacity-50 absolute bottom-0 left-0 right-0">
+        <TouchableOpacity
+          onPress={retakePicture}
+          className="bg-red-500 px-4 py-2 rounded-md"
+        >
+          <Text className="text-white text-lg">Re-take</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={processPhoto}
+          className="bg-green-500 px-4 py-2 rounded-md"
+        >
+          <Text className="text-white text-lg">Get Data</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 };
-
-// import { CameraView, CameraProps, useCameraPermissions } from "expo-camera";
-// import { useState, useEffect, useRef } from "react";
-// import { Text, TouchableOpacity, View } from "react-native";
-// import { Button } from "react-native-paper";
-
-// import { createWorker } from "tesseract.js";
-// export default function App() {
-// 	console.log("OCRPage");
-// 	// @ts-ignore: just being lazy with types here
-// 	const cameraRef = useRef<CameraView>(undefined);
-// 	const [facing, setFacing] = useState<CameraProps["facing"]>("back");
-// 	const [permission, requestPermission] = useCameraPermissions();
-// 	const [pictureSizes, setPictureSizes] = useState<string[]>([]);
-// 	const [selectedSize, setSelectedSize] = useState(undefined);
-// 	const [imageText, setImageText] = useState("");
-// 	const [photoURI, setPhotoURI] = useState<string>("");
-
-// 	async function doOCR() {
-// 		const worker = await createWorker("eng", 1, {
-// 			logger: (m: any) => console.log(m),
-// 		});
-// 		const {
-// 			data: { text },
-// 		} = await worker.recognize(photoURI);
-// 		console.log(text);
-// 		setImageText(text);
-// 		await worker.terminate();
-// 	}
-
-// 	useEffect(() => {
-// 		async function getSizes() {
-// 			if (permission?.granted && cameraRef.current) {
-// 				const sizes = await cameraRef.current.getAvailablePictureSizesAsync();
-// 				setPictureSizes(sizes);
-// 			}
-// 		}
-// 		getSizes();
-// 	}, [permission, cameraRef]);
-
-// 	if (!permission) {
-// 		// Camera permissions are still loading.
-// 		return <View />;
-// 	}
-
-// 	if (!permission.granted) {
-// 		// Camera permissions are not granted yet.
-// 		return (
-// 			<View className="flex-1 justify-center items-center">
-// 				<Text className="text-center">
-// 					We need your permission to show the camera
-// 				</Text>
-// 				<Button onPress={requestPermission}>Grant Permission</Button>
-// 			</View>
-// 		);
-// 	}
-
-// 	function toggleCameraFacing() {
-// 		setFacing((current) => (current === "back" ? "front" : "back"));
-// 	}
-
-// 	async function takePicture() {
-// 		const photo = await cameraRef.current?.takePictureAsync();
-// 		console.log("Photooo", photo);
-// 		if (photo) {
-// 			setPhotoURI(JSON.stringify(photo));
-// 			console.log("Picture Taken");
-// 		}
-// 		console.log(JSON.stringify(photo));
-// 	}
-
-// 	return (
-// 		<View className="flex-1 justify-center">
-// 			<CameraView className="flex-1" facing={facing}>
-// 				<View className="flex-1 flex-row bg-transparent m-16 items-end justify-center">
-// 					<Button
-// 						className="text-white border-2 border-[#EFA00B] rounded-xl m-2 p-2 "
-// 						onPress={toggleCameraFacing}
-// 					>
-// 						Flip Camera
-// 					</Button>
-// 					<Button
-// 						className="text-white border-2 border-[#EFA00B] rounded-xl m-2 p-2"
-// 						onPress={takePicture}
-// 					>
-// 						Take Picture
-// 					</Button>
-// 				</View>
-// 			</CameraView>
-// 		</View>
-// 	);
-// }

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   DarkTheme,
   DefaultTheme,
@@ -8,12 +9,11 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import "react-native-url-polyfill/auto";
-import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import Auth from "@/components/loginComponent";
-import { View, Text } from "react-native";
+import SignIn from "@/components/sign-in";
+import SignUp from "@/components/sign-up"; // Assuming you've created this component
+import { View } from "react-native";
 import { Session } from "@supabase/supabase-js";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -21,10 +21,13 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setIsLoading(false);
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
@@ -33,6 +36,7 @@ export default function RootLayout() {
   }, []);
 
   const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -43,7 +47,7 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
+  if (!loaded || isLoading) {
     return null;
   }
 
@@ -55,8 +59,12 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
       ) : (
-        <View>
-          <Auth />
+        <View style={{ flex: 1 }}>
+          {showSignUp ? (
+            <SignUp onSignIn={() => setShowSignUp(false)} />
+          ) : (
+            <SignIn onSignUp={() => setShowSignUp(true)} />
+          )}
         </View>
       )}
     </ThemeProvider>
