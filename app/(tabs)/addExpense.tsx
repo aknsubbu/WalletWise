@@ -103,69 +103,132 @@ export default function AddExpense() {
     amountBounce,
   ]);
 
+  const getOrCreateMerchant = async (
+    merchantName: string,
+    category: string
+  ) => {
+    try {
+      console.log("Attempting to get or create merchant:", merchantName);
+
+      const { data: existingMerchant, error: merchantError } = await supabase
+        .from("merchants")
+        .select("merchant_id")
+        .eq("merchant_name", merchantName)
+        .single();
+
+      if (merchantError && merchantError.code !== "PGRST116") {
+        console.error("Error checking existing merchant:", merchantError);
+        throw merchantError;
+      }
+
+      if (existingMerchant) {
+        console.log("Existing merchant found:", existingMerchant);
+        return existingMerchant.merchant_id;
+      }
+
+      console.log("Merchant not found. Attempting to create new merchant.");
+      const { data: newMerchant, error: createError } = await supabase
+        .from("merchants")
+        .insert({ merchant_name: merchantName, merchant_type: category })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating new merchant:", createError);
+        throw createError;
+      }
+
+      console.log("New merchant created:", newMerchant);
+      return newMerchant.merchant_id;
+    } catch (error) {
+      console.error("Error in getOrCreateMerchant:", error);
+      throw error;
+    }
+  };
+
+  const getOrCreatePaymentMethod = async (
+    paymentType: string,
+    userId: string
+  ) => {
+    try {
+      console.log("Attempting to get or create payment method:", paymentType);
+
+      const { data: existingMethod, error: methodError } = await supabase
+        .from("payment_methods")
+        .select("payment_method_id")
+        .eq("payment_type", paymentType)
+        .eq("user_id", userId)
+        .single();
+
+      if (methodError && methodError.code !== "PGRST116") {
+        console.error("Error checking existing payment method:", methodError);
+        throw methodError;
+      }
+
+      if (existingMethod) {
+        console.log("Existing payment method found:", existingMethod);
+        return existingMethod.payment_method_id;
+      }
+
+      console.log(
+        "Payment method not found. Attempting to create new payment method."
+      );
+      const { data: newMethod, error: createError } = await supabase
+        .from("payment_methods")
+        .insert({ payment_type: paymentType, user_id: userId })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating new payment method:", createError);
+        throw createError;
+      }
+
+      console.log("New payment method created:", newMethod);
+      return newMethod.payment_method_id;
+    } catch (error) {
+      console.error("Error in getOrCreatePaymentMethod:", error);
+      throw error;
+    }
+  };
+
   const handleSavePress = async () => {
     try {
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
+        console.error("No active session found");
+        Alert.alert(
+          "Error",
+          "You are not authenticated. Please log in and try again."
+        );
+        return;
+      }
 
-      if (userError) throw userError;
-      if (!user) throw new Error("User not authenticated");
+      console.log("Authenticated user:", session.user.id);
 
       if (!amount || !category || !type || !merchant || !account) {
         Alert.alert("Error", "Please fill in all required fields.");
         return;
       }
 
-      // Check if user exists in the profiles table
-      const { data: existingUser, error: userCheckError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-
-      if (userCheckError) {
-        if (userCheckError.code === "PGRST116") {
-          Alert.alert("Error", "User not found. Please sign in again.");
-          return;
-        }
-        throw userCheckError;
-      }
-
-      // Check if merchant exists or create a new one
-      let merchantId;
-      const { data: existingMerchant, error: merchantError } = await supabase
-        .from("merchants")
-        .select("merchant_id")
-        .eq("merchant_name", merchant)
-        .single();
-
-      if (merchantError && merchantError.code !== "PGRST116") {
-        throw merchantError;
-      }
-
-      if (!existingMerchant) {
-        const { data: newMerchant, error: createError } = await supabase
-          .from("merchants")
-          .upsert({ merchant_name: merchant, merchant_type: category })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        merchantId = newMerchant.merchant_id;
-      } else {
-        merchantId = existingMerchant.merchant_id;
-      }
+      const merchantId = await getOrCreateMerchant(merchant, category);
+      const paymentMethodId = await getOrCreatePaymentMethod(
+        account,
+        session.user.id
+      );
 
       const transactionData = {
-        user_id: user.id,
+        user_id: session.user.id,
         amount: parseFloat(amount),
         t_date: date.toISOString(),
         category,
-        payment_method: account, // Using account name directly instead of payment_method_id
+        payment_method_id: paymentMethodId,
         merchant_id: merchantId,
-        type, // 'Deposit' or 'Withdrawal'
+        type,
         description,
       };
 
@@ -184,6 +247,7 @@ export default function AddExpense() {
       Alert.alert("Error", "Failed to save transaction. Please try again.");
     }
   };
+
   const resetForm = () => {
     setAmount("");
     setCategory("");
@@ -418,12 +482,12 @@ export default function AddExpense() {
             visible={showCustomModal}
             onDismiss={() => setShowCustomModal(false)}
           >
-            <View className="bg-white p-5 rounded-lg">
+            <View className="bg-white/80 p-5 rounded-lg">
               <TextInput
                 label={`Enter new ${customType}`}
                 value={customEntry}
                 onChangeText={setCustomEntry}
-                className="mb-4"
+                className="mb-4 rounded-xl"
               />
               <Button
                 mode="contained"
@@ -441,7 +505,7 @@ export default function AddExpense() {
             visible={showSuccessModal}
             onDismiss={() => setShowSuccessModal(false)}
           >
-            <View className="bg-white p-5 rounded-lg items-center max-w-[300px] self-center">
+            <View className="bg-white/20 p-5 rounded-lg items-center max-w-[300px] self-center">
               <Text className="text-lg text-black mb-2 font-bold">
                 Transaction Added
               </Text>

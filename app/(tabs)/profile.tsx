@@ -65,6 +65,7 @@ export default function ProfilePage() {
           data: { user },
           error: userError,
         } = await supabase.auth.getUser();
+        console.log(user);
         if (userError) throw userError;
 
         const { data: profileData, error: profileError } = await supabase
@@ -72,6 +73,7 @@ export default function ProfilePage() {
           .select("*")
           .eq("id", user?.id)
           .single();
+        console.log(profileData);
         if (profileError) throw profileError;
 
         setUser(user);

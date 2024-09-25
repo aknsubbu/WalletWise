@@ -30,6 +30,7 @@ export default function SignUp({ onSignIn }: Props) {
 
     if (error) {
       Alert.alert("Error", error.message);
+      console.log(error.message);
       setLoading(false);
       return;
     }
@@ -47,15 +48,17 @@ export default function SignUp({ onSignIn }: Props) {
         .eq("id", data.user.id);
 
       if (profileError) {
+        console.error("Profile insert error:", profileError);
         Alert.alert(
           "Error",
-          "Failed to update profile: " + profileError.message
+          "Failed to create profile: " + profileError.message
         );
       } else {
         Alert.alert("Success", "Account created successfully!");
         onSignIn();
       }
     } else {
+      console.error("Unexpected error: User data is null after sign up");
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
     }
 
