@@ -470,13 +470,20 @@ export default function AddExpense() {
               onPress={handleSavePress}
               className="mt-5 p-2"
             >
-              <Button icon="plus" mode="contained" buttonColor="#EFA00B">
+              <Button
+                icon="plus"
+                mode="contained"
+                buttonColor="#EFA00B"
+                className="mb-10"
+              >
                 Add Transaction
               </Button>
             </Pressable>
           </Animated.View>
         </ScrollView>
+      </SafeAreaView>
 
+      <SafeAreaView>
         <Portal>
           <Modal
             visible={showCustomModal}
