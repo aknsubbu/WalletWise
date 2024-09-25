@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Text, TouchableOpacity, View, Image, Platform } from "react-native";
 import { CameraView, CameraProps, useCameraPermissions } from "expo-camera";
-import MlkitOcr from "react-native-mlkit-ocr";
+import * as FileSystem from "expo-file-system";
+
+import performOCR from "@/components/functions/OpenAIInterface";
 
 interface CameraPreviewProps {
   photoURI: string;
@@ -9,40 +11,14 @@ interface CameraPreviewProps {
   processPhoto: () => void;
 }
 
-// TODO : Switch the OCR to the backend...
-
 export default function App() {
   const cameraRef = useRef<CameraView | null>(null);
   const [facing, setFacing] = useState<CameraProps["facing"]>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [photoURI, setPhotoURI] = useState<string>("");
+  const [imageText, setImageData] = useState<string>("");
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [ocrInProgress, setOcrInProgress] = useState(false);
-  const [mlkitAvailable, setMlkitAvailable] = useState(false);
-
-  useEffect(() => {
-    const checkMlkitAvailability = async () => {
-      let retries = 0;
-      const maxRetries = 5;
-
-      while (retries < maxRetries) {
-        if (MlkitOcr && typeof MlkitOcr.detectFromUri === "function") {
-          console.log("MLKit OCR is available");
-          setMlkitAvailable(true);
-          return;
-        }
-        console.log(
-          `MLKit OCR not available, retrying... (${retries + 1}/${maxRetries})`
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
-        retries++;
-      }
-
-      console.error("MLKit OCR is not available after multiple attempts");
-    };
-
-    checkMlkitAvailability();
-  }, []);
+  const [transmissionInProgress, setTransmissionInProgress] = useState(false);
 
   if (!permission?.granted) {
     return (
@@ -91,18 +67,14 @@ export default function App() {
   };
 
   const processPhoto = async () => {
-    if (!mlkitAvailable) {
-      console.error("MLKit OCR is not available");
-      return;
-    }
-    setOcrInProgress(true);
-    await doOCR();
-    setOcrInProgress(false);
+    setTransmissionInProgress(true);
+    await transmitImage();
+    setTransmissionInProgress(false);
     setPreviewVisible(false);
   };
 
-  const doOCR = async () => {
-    console.log("Starting OCR");
+  const transmitImage = async () => {
+    console.log("Starting image transmission");
     console.log("Photo URI:", photoURI);
 
     if (!photoURI) {
@@ -111,16 +83,17 @@ export default function App() {
     }
 
     try {
-      let uri = photoURI;
-      if (Platform.OS === "ios" && !photoURI.startsWith("file://")) {
-        uri = `file://${photoURI}`;
-      }
+      // Read the file as a base64 string
+      const base64 = await FileSystem.readAsStringAsync(photoURI, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      const result = await MlkitOcr.detectFromUri(uri);
-      console.log("OCR Result:", result);
-      console.log("OCR completed");
+      // Send the request to your backend
+      const response = performOCR(base64);
+      // setImageData(response);
+      console.log("Image transmission completed");
     } catch (error) {
-      console.error("OCR Error:", error);
+      console.error("Image Transmission Error:", error);
     }
   };
 
@@ -150,8 +123,10 @@ export default function App() {
           </View>
         </CameraView>
       )}
-      {ocrInProgress && (
-        <Text className="p-4 text-center">OCR in progress...</Text>
+      {transmissionInProgress && (
+        <Text className="p-4 text-center">
+          Image transmission in progress...
+        </Text>
       )}
     </View>
   );
@@ -176,7 +151,7 @@ const CameraPreview: React.FC<CameraPreviewProps> = ({
           onPress={processPhoto}
           className="bg-green-500 px-4 py-2 rounded-md"
         >
-          <Text className="text-white text-lg">Get Data</Text>
+          <Text className="text-white text-lg">Send Image</Text>
         </TouchableOpacity>
       </View>
     </View>
