@@ -51,6 +51,7 @@ export default function AddExpense() {
     "Beauty & Health",
     "Education",
     "Gift",
+    "Entertainment",
     "Other",
   ]);
   const [accounts, setAccounts] = useState([
