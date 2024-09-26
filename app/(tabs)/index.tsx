@@ -61,6 +61,9 @@ function Dashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUserAndProfile();
+    }, 5000);
     async function fetchUserAndProfile() {
       try {
         const {
@@ -116,6 +119,8 @@ function Dashboard() {
       }
     }
     fetchUserAndProfile();
+
+    return () => clearInterval(interval);
   }, []);
 
   const filteredTransactions = transactions.filter((transaction) => {

@@ -306,7 +306,7 @@ export default function AddExpense() {
                 icon="file-find"
                 mode="contained"
                 buttonColor="#EFA00B"
-                onPress={() => console.log("Pressed")}
+                onPress={() => router.push("/FilesPage")}
                 className="rounded-xl mx-1 my-3 w-full "
               >
                 Browse Files
@@ -356,7 +356,7 @@ export default function AddExpense() {
               keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}
-              className="bg-[#333333] my-1 p-2 rounded text-white rounded-xl"
+              className="bg-[#333333] my-1 p-2  text-white rounded-xl"
               theme={{ colors: { text: "#FFFFFF" } }}
             />
           </Animated.View>

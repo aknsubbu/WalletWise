@@ -76,6 +76,9 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUserAndProfile();
+    }, 5000);
     async function fetchUserAndProfile() {
       try {
         const {
@@ -132,6 +135,8 @@ export default function AnalyticsPage() {
       }
     }
     fetchUserAndProfile();
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
