@@ -230,13 +230,13 @@ function Dashboard() {
 
       {/* Transaction List with Scrollable View */}
       <ScrollView className="mb-5" nestedScrollEnabled={true}>
-        <View className="p-3 bg-[#333333] rounded-xl">
+        <View className="p-3 bg-[#1c1b1b] rounded-xl">
           <Text className="text-white text-lg mb-2">Transactions</Text>
 
           {filteredTransactions.map((transaction, index) => (
             <View
               key={index}
-              className="flex-row items-center p-4 bg-[#444444] rounded-xl mb-2"
+              className="flex-row items-center p-4 bg-[#222222] rounded-xl mb-2"
             >
               <FontAwesome name="coffee" size={24} color="white" />
               <View className="flex-1 ml-3">
