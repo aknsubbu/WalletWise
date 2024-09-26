@@ -512,7 +512,7 @@ export default function AddExpense() {
             visible={showSuccessModal}
             onDismiss={() => setShowSuccessModal(false)}
           >
-            <View className="bg-white/20 p-5 rounded-lg items-center max-w-[300px] self-center">
+            <View className="bg-black/40 p-5 rounded-lg items-center max-w-[300px] self-center">
               <Text className="text-lg text-black mb-2 font-bold">
                 Transaction Added
               </Text>
