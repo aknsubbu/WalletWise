@@ -1,406 +1,17 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   StyleSheet,
-//   View,
-//   TouchableOpacity,
-//   Text,
-//   Dimensions,
-//   SafeAreaView,
-//   Image,
-//   ScrollView,
-// } from "react-native";
-// import { Button, Avatar, Card } from "react-native-paper";
-// import { supabase } from "@/lib/supabase";
-// import { User } from "@supabase/supabase-js";
-// import { PieChart, LineChart, BarChart } from "react-native-gifted-charts";
-// import AvatarClickHandle from "@/components/functions/AvatarClickHandle";
-
-// // ! Need to edit the second button for a different purpose
-
-// interface Profile {
-//   id: string;
-//   username: string;
-//   full_name: string;
-//   picture_url: string | null;
-//   website: string | null;
-// }
-
-// interface BankAccount {
-//   id: string;
-//   name: string;
-//   balance: number;
-// }
-
-// interface Transaction {
-//   transaction_id: string;
-//   user_id: string;
-//   amount: number;
-//   description: string;
-//   t_date: string;
-//   category: string;
-//   type: string;
-//   payment_method: {
-//     payment_method_id: string;
-//     payment_type: string;
-//   };
-//   merchant: {
-//     merchant_id: string;
-//     merchant_name: string;
-//     merchant_type: string;
-//   };
-// }
-
-// interface PieChartData {
-//   value: number;
-//   text: string;
-//   label: string;
-// }
-
-// interface LineChartData {
-//   date: string;
-//   value: number;
-// }
-
-// interface BarChartData {
-//   value: number;
-//   label: string;
-//   frontColor: string;
-// }
-
-// export default function AnalyticsPage() {
-//   const [user, setUser] = useState<User | null>(null);
-//   const [profile, setProfile] = useState<Profile | null>(null);
-//   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
-//   const [transactions, setTransactions] = useState<Transaction[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       fetchUserAndProfile();
-//     }, 5000);
-//     async function fetchUserAndProfile() {
-//       try {
-//         const {
-//           data: { user },
-//           error: userError,
-//         } = await supabase.auth.getUser();
-//         if (userError) throw userError;
-
-//         const { data: profileData, error: profileError } = await supabase
-//           .from("profiles")
-//           .select("*")
-//           .eq("id", user?.id)
-//           .single();
-//         if (profileError) throw profileError;
-
-//         const { data: bankAccountsData, error: bankAccountsError } =
-//           await supabase
-//             .from("bankbalance")
-//             .select("*")
-//             .eq("user_id", user?.id);
-//         if (bankAccountsError) throw bankAccountsError;
-
-//         const { data: transactionData, error: transactionError } =
-//           await supabase
-//             .from("transactions")
-//             .select(
-//               `
-//               *,
-//               payment_method:payment_method_id (
-//                 payment_method_id,
-//                 payment_type
-//               ),
-//               merchant:merchant_id (
-//                 merchant_id,
-//                 merchant_name,
-//                 merchant_type
-//               )
-//             `
-//             )
-//             .eq("user_id", user?.id);
-
-//         if (transactionError) throw transactionError;
-//         console.log(transactionData);
-//         console.log(bankAccountsData);
-//         setUser(user);
-//         setProfile(profileData);
-//         setBankAccounts(bankAccountsData);
-//         setTransactions(transactionData);
-//       } catch (e) {
-//         setError(e instanceof Error ? e.message : "An unknown error occurred");
-//         console.log(e);
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-//     fetchUserAndProfile();
-
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <View className="flex-1 bg-[#0E0E0E] justify-center items-center">
-//         <Text className="text-white font-xl font-light">Loading...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <View className="flex-1 bg-[#0E0E0E] justify-center items-center">
-//         <Text className="text-white">Error: {error}</Text>
-//       </View>
-//     );
-//   }
-
-//   const calculateTotalSpending = (transactions: Transaction[]): number => {
-//     return transactions.reduce(
-//       (total, transaction) =>
-//         transaction.type === "Withdrawal" ? total + transaction.amount : total,
-//       0
-//     );
-//   };
-
-//   const calculateTotalIncome = (transactions: Transaction[]): number => {
-//     return transactions.reduce(
-//       (total, transaction) =>
-//         transaction.type === "Deposit" ? total + transaction.amount : total,
-//       0
-//     );
-//   };
-
-//   const calculateAverageTransaction = (transactions: Transaction[]): number => {
-//     const withdrawals = transactions.filter((t) => t.type === "Withdrawal");
-//     return withdrawals.length > 0
-//       ? withdrawals.reduce((sum, t) => sum + t.amount, 0) / withdrawals.length
-//       : 0;
-//   };
-
-//   const getMostFrequentCategory = (transactions: Transaction[]): string => {
-//     const categoryCounts = transactions.reduce(
-//       (acc: { [key: string]: number }, transaction) => {
-//         acc[transaction.category] = (acc[transaction.category] || 0) + 1;
-//         return acc;
-//       },
-//       {}
-//     );
-//     return (
-//       Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-//       "N/A"
-//     );
-//   };
-
-//   const getHighestSpendingCategory = (
-//     transactions: Transaction[]
-//   ): { category: string; amount: number } => {
-//     const categorySpending = transactions.reduce(
-//       (acc: { [key: string]: number }, transaction) => {
-//         if (transaction.type === "Withdrawal") {
-//           acc[transaction.category] =
-//             (acc[transaction.category] || 0) + transaction.amount;
-//         }
-//         return acc;
-//       },
-//       {}
-//     );
-//     const highestCategory = Object.entries(categorySpending).sort(
-//       (a, b) => b[1] - a[1]
-//     )[0];
-//     return highestCategory
-//       ? { category: highestCategory[0], amount: highestCategory[1] }
-//       : { category: "N/A", amount: 0 };
-//   };
-
-//   const getLatestTransaction = (
-//     transactions: Transaction[]
-//   ): Transaction | null => {
-//     return (
-//       transactions.sort(
-//         (a, b) => new Date(b.t_date).getTime() - new Date(a.t_date).getTime()
-//       )[0] || null
-//     );
-//   };
-
-//   const calculateNetSavings = (transactions: Transaction[]): number => {
-//     const income = calculateTotalIncome(transactions);
-//     const spending = calculateTotalSpending(transactions);
-//     return income - spending;
-//   };
-
-//   const calculateMostUsedPaymentMethod = (
-//     transactions: Transaction[]
-//   ): string => {
-//     const paymentMethodCounts = transactions.reduce(
-//       (acc: { [key: string]: number }, transaction) => {
-//         acc[transaction.payment_method.payment_type] =
-//           (acc[transaction.payment_method.payment_type] || 0) + 1;
-//         return acc;
-//       },
-//       {}
-//     );
-//     return (
-//       Object.entries(paymentMethodCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-//       "N/A"
-//     );
-//   };
-
-//   return (
-//     <SafeAreaView style={{ flex: 1, backgroundColor: "#0E0E0E" }}>
-//       <ScrollView>
-//         <View className="flex flex-row p-5">
-//           <View className="flex flex-col justify-center">
-//             <Text className="text-3xl text-white font-bold">Your Hub</Text>
-//           </View>
-//           <View className="flex justify-center items-end flex-grow">
-//             <Avatar.Image
-//               size={50}
-//               source={require("../../assets/images/people_icon.png")}
-//               onTouchEnd={AvatarClickHandle}
-//             />
-//           </View>
-//         </View>
-
-//         {/* <View className="flex flex-col p-5">
-//           <Button
-//             icon="cash"
-//             mode="contained"
-//             buttonColor="#EFA00B"
-//             onPress={() => console.log("Pressed")}
-//             className="rounded-xl mb-2"
-//           >
-//             Edit your Budget
-//           </Button>
-//           <Button
-//             icon="cash-fast"
-//             mode="contained"
-//             buttonColor="#EFA00B"
-//             onPress={() => console.log("Pressed")}
-//             className="rounded-xl"
-//           >
-//             Quick Actions
-//           </Button>
-//         </View> */}
-
-//         <View className="p-5">
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">Total Spending</Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 ${calculateTotalSpending(transactions).toFixed(2)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">Total Income</Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 ${calculateTotalIncome(transactions).toFixed(2)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">Net Savings</Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 ${calculateNetSavings(transactions).toFixed(2)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">
-//                 Average Transaction
-//               </Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 ${calculateAverageTransaction(transactions).toFixed(2)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">
-//                 Most Frequent Category
-//               </Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 {getMostFrequentCategory(transactions)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">
-//                 Highest Spending Category
-//               </Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 {getHighestSpendingCategory(transactions).category}
-//               </Text>
-//               <Text className="text-white">
-//                 ${getHighestSpendingCategory(transactions).amount.toFixed(2)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">
-//                 Most Used Payment Method
-//               </Text>
-//               <Text className="text-[#EFA00B] text-2xl font-bold">
-//                 {calculateMostUsedPaymentMethod(transactions)}
-//               </Text>
-//             </Card.Content>
-//           </Card>
-
-//           <Card className="mb-4 bg-[#262626]">
-//             <Card.Content>
-//               <Text className="text-white text-lg mb-2">
-//                 Latest Transaction
-//               </Text>
-//               {getLatestTransaction(transactions) && (
-//                 <>
-//                   <Text className="text-[#EFA00B] text-xl font-bold">
-//                     ${getLatestTransaction(transactions)?.amount.toFixed(2)}
-//                   </Text>
-//                   <Text className="text-white">
-//                     {getLatestTransaction(transactions)?.merchant.merchant_name}
-//                   </Text>
-//                   <Text className="text-gray-400">
-//                     {new Date(
-//                       getLatestTransaction(transactions)?.t_date || ""
-//                     ).toLocaleDateString()}
-//                   </Text>
-//                 </>
-//               )}
-//             </Card.Content>
-//           </Card>
-//         </View>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// }
-
 import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  Dimensions,
+  Modal,
 } from "react-native";
 import { PieChart, BarChart } from "react-native-gifted-charts";
 import { supabase } from "../../lib/supabaseClient";
 import { format, parseISO, subMonths } from "date-fns";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Card, Avatar, Button } from "react-native-paper";
+import { Avatar } from "react-native-paper";
 import { User } from "@supabase/supabase-js";
 import AvatarClickHandle from "@/components/functions/AvatarClickHandle";
 import { LinearGradient } from "expo-linear-gradient";
@@ -468,6 +79,10 @@ const FinanceOverview = () => {
   const [netSavings, setNetSavings] = useState(0);
   const [pieChartData, setPieChartData] = useState<PieChartData[]>([]);
   const [barChartData, setBarChartData] = useState<BarChartData[]>([]);
+  const [selectedPieChartItem, setSelectedPieChartItem] =
+    useState<PieChartData | null>(null);
+  const [selectedBarChartItem, setSelectedBarChartItem] =
+    useState<BarChartData | null>(null);
 
   let [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -682,31 +297,45 @@ const FinanceOverview = () => {
     );
   };
 
+  const onPieChartPress = (item: PieChartData) => {
+    setSelectedPieChartItem(item);
+  };
+
+  const onBarChartPress = (item: BarChartData) => {
+    setSelectedBarChartItem(item);
+  };
+
   if (loading || !fontsLoaded) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View className="flex-1 bg-[#1a1a1a] justify-center items-center">
+        <Text className="text-white text-lg font-poppins-regular">
+          Loading...
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: {error}</Text>
+      <View className="flex-1 bg-[#1a1a1a] justify-center items-center">
+        <Text className="text-[#FF6B6B] text-lg font-poppins-regular">
+          Error: {error}
+        </Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-[#000000]">
       <ScrollView>
         <LinearGradient
-          colors={["#1a1a1a", "#2a2a2a"]}
-          style={styles.gradientBackground}
+          colors={["#1a1a1a", "#000000"]}
+          className="flex-1 px-5 pt-5"
         >
-          <View style={styles.header}>
-            <Text style={styles.headerText}>Financial Overview</Text>
+          <View className="flex-row justify-between items-center mb-5">
+            <Text className="text-white text-2xl font-poppins-semibold">
+              Financial Overview
+            </Text>
             <Avatar.Image
               size={40}
               source={require("../../assets/images/people_icon.png")}
@@ -714,51 +343,63 @@ const FinanceOverview = () => {
             />
           </View>
 
-          <Card style={styles.summaryCard}>
-            <Card.Content style={styles.summaryContent}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Income</Text>
-                <Text style={styles.summaryValue}>
+          <View className="mb-5">
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5 mb-3">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-[#9A9A9A] text-lg font-poppins-regular">
+                  Income
+                </Text>
+                <Text className="text-white text-xl font-poppins-semibold">
                   ${totalIncome.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Expenses</Text>
-                <Text style={styles.summaryValue}>
+            </View>
+
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5 mb-3">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-[#9A9A9A] text-lg font-poppins-regular">
+                  Expenses
+                </Text>
+                <Text className="text-white text-xl font-poppins-semibold">
                   ${totalSpending.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>Savings</Text>
-                <Text style={styles.summaryValue}>
+            </View>
+
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-[#9A9A9A] text-lg font-poppins-regular">
+                  Savings
+                </Text>
+                <Text className="text-white text-xl font-poppins-semibold">
                   ${netSavings.toFixed(2)}
                 </Text>
               </View>
-            </Card.Content>
-          </Card>
+            </View>
+          </View>
 
-          <View style={styles.chartContainer}>
-            <Text style={styles.chartTitle}>Expense Breakdown</Text>
+          <View className="bg-[#2a2a2a] rounded-3xl my-5 p-5 elevation-5 items-center">
+            <Text className="text-white text-xl font-poppins-semibold mb-4">
+              Expense Breakdown
+            </Text>
             <PieChart
               data={pieChartData}
-              // showText
               textColor="white"
               radius={150}
               innerRadius={80}
               textSize={12}
               labelsPosition="outward"
               showValuesAsLabels={true}
+              onPress={onPieChartPress}
             />
-            <View style={styles.legendContainer}>
+            <View className="flex-row flex-wrap justify-center mt-5">
               {pieChartData.map((item, index) => (
-                <View key={index} style={styles.legendItem}>
+                <View key={index} className="flex-row items-center mr-4 mb-2">
                   <View
-                    style={[
-                      styles.legendColor,
-                      { backgroundColor: item.color },
-                    ]}
+                    className={`w-3 h-3 rounded-full mr-1`}
+                    style={{ backgroundColor: item.color }}
                   />
-                  <Text style={styles.legendText}>
+                  <Text className="text-white text-xs font-poppins-regular">
                     {item.label} ({item.text})
                   </Text>
                 </View>
@@ -766,8 +407,10 @@ const FinanceOverview = () => {
             </View>
           </View>
 
-          <View style={styles.chartContainer}>
-            <Text style={styles.chartTitle}>Monthly Spending</Text>
+          <View className="bg-[#2a2a2a] rounded-3xl my-5 p-5 elevation-5 items-center">
+            <Text className="text-white text-xl font-poppins-semibold mb-4">
+              Monthly Spending
+            </Text>
             <BarChart
               data={barChartData}
               barWidth={30}
@@ -777,58 +420,72 @@ const FinanceOverview = () => {
               hideRules
               xAxisThickness={0}
               yAxisThickness={0}
-              yAxisTextStyle={styles.chartAxisText}
-              xAxisLabelTextStyle={styles.chartAxisText}
+              yAxisTextStyle={{
+                color: "#9A9A9A",
+                fontSize: 10,
+                fontFamily: "Poppins_400Regular",
+              }}
+              xAxisLabelTextStyle={{
+                color: "#9A9A9A",
+                fontSize: 10,
+                fontFamily: "Poppins_400Regular",
+              }}
               noOfSections={5}
               maxValue={Math.max(...barChartData.map((item) => item.value))}
+              onPress={onBarChartPress}
             />
           </View>
 
-          <Card style={styles.dataCard}>
-            <Card.Content>
-              <Text style={styles.dataTitle}>Average Transaction</Text>
-              <Text style={styles.dataValue}>
+          {/* ... (keep the other data cards and transaction list, converting their styles to Tailwind CSS) */}
+          <View className="space-y-4">
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5">
+              <Text className="text-[#9A9A9A] text-base font-poppins-regular mb-1">
+                Average Transaction
+              </Text>
+              <Text className="text-white text-xl font-poppins-semibold">
                 ${calculateAverageTransaction(transactions).toFixed(2)}
               </Text>
-            </Card.Content>
-          </Card>
+            </View>
 
-          <Card style={styles.dataCard}>
-            <Card.Content>
-              <Text style={styles.dataTitle}>Most Frequent Category</Text>
-              <Text style={styles.dataValue}>
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5">
+              <Text className="text-[#9A9A9A] text-base font-poppins-regular mb-1">
+                Most Frequent Category
+              </Text>
+              <Text className="text-white text-xl font-poppins-semibold">
                 {getMostFrequentCategory(transactions)}
               </Text>
-            </Card.Content>
-          </Card>
+            </View>
 
-          <Card style={styles.dataCard}>
-            <Card.Content>
-              <Text style={styles.dataTitle}>Highest Spending Category</Text>
-              <Text style={styles.dataValue}>
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5">
+              <Text className="text-[#9A9A9A] text-base font-poppins-regular mb-1">
+                Highest Spending Category
+              </Text>
+              <Text className="text-white text-xl font-poppins-semibold">
                 {getHighestSpendingCategory(transactions).category}
               </Text>
-              <Text style={styles.dataSubValue}>
+              <Text className="text-[#9A9A9A] text-sm font-poppins-regular mt-1">
                 ${getHighestSpendingCategory(transactions).amount.toFixed(2)}
               </Text>
-            </Card.Content>
-          </Card>
+            </View>
 
-          <Card style={styles.dataCard}>
-            <Card.Content>
-              <Text style={styles.dataTitle}>Most Used Payment Method</Text>
-              <Text style={styles.dataValue}>
+            <View className="bg-[#2a2a2a] rounded-3xl p-4 elevation-5">
+              <Text className="text-[#9A9A9A] text-base font-poppins-regular mb-1">
+                Most Used Payment Method
+              </Text>
+              <Text className="text-white text-xl font-poppins-semibold">
                 {calculateMostUsedPaymentMethod(transactions)}
               </Text>
-            </Card.Content>
-          </Card>
+            </View>
+          </View>
 
-          <View style={styles.transactionsList}>
-            <Text style={styles.transactionsTitle}>Recent Transactions</Text>
+          {/* <View className="mt-6">
+            <Text className="text-white text-xl font-poppins-semibold mb-4">
+              Recent Transactions
+            </Text>
             {transactions.slice(0, 5).map((transaction, index) => (
               <TouchableOpacity
                 key={transaction.transaction_id}
-                style={styles.transactionItem}
+                className="flex-row items-center bg-[#2a2a2a] rounded-2xl p-4 mb-3 elevation-3"
               >
                 <MaterialIcons
                   name={
@@ -838,206 +495,88 @@ const FinanceOverview = () => {
                   }
                   size={24}
                   color={transaction.type === "Deposit" ? "#4ECDC4" : "#FF6B6B"}
-                  style={styles.transactionIcon}
+                  style={{ marginRight: 15 }}
                 />
-                <View style={styles.transactionDetails}>
-                  <Text style={styles.transactionCategory}>
+                <View className="flex-1">
+                  <Text className="text-white text-base font-poppins-semibold">
                     {transaction.category}
                   </Text>
-                  <Text style={styles.transactionDate}>
+                  <Text className="text-[#9A9A9A] text-sm font-poppins-regular">
                     {formatDate(transaction.t_date)}
                   </Text>
                 </View>
                 <Text
-                  style={[
-                    styles.transactionAmount,
+                  className={`text-base font-poppins-semibold ${
                     transaction.type === "Withdrawal"
-                      ? styles.expenseAmount
-                      : styles.incomeAmount,
-                  ]}
+                      ? "text-[#FF6B6B]"
+                      : "text-[#4ECDC4]"
+                  }`}
                 >
-                  {transaction.type === "Withdrawal"
-                    ? `-$${transaction.amount.toFixed(2)}`
-                    : `$${transaction.amount.toFixed(2)}`}
+                  {transaction.type === "Withdrawal" ? "-" : "+"}$
+                  {transaction.amount.toFixed(2)}
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </View> */}
         </LinearGradient>
       </ScrollView>
+
+      <Modal
+        visible={!!selectedPieChartItem}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedPieChartItem(null)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-[#2a2a2a] p-5 rounded-3xl w-4/5">
+            <Text className="text-white text-xl font-poppins-semibold mb-2">
+              {selectedPieChartItem?.label}
+            </Text>
+            <Text className="text-[#9A9A9A] text-base font-poppins-regular mb-2">
+              Amount: ${selectedPieChartItem?.value.toFixed(2)}
+            </Text>
+            <Text className="text-[#9A9A9A] text-base font-poppins-regular">
+              Percentage: {selectedPieChartItem?.text}
+            </Text>
+            <TouchableOpacity
+              className="mt-4 bg-[#3a3a3a] py-2 px-4 rounded-full"
+              onPress={() => setSelectedPieChartItem(null)}
+            >
+              <Text className="text-white text-center font-poppins-regular">
+                Close
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={!!selectedBarChartItem}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedBarChartItem(null)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-[#2a2a2a] p-5 rounded-3xl w-4/5">
+            <Text className="text-white text-xl font-poppins-semibold mb-2">
+              {selectedBarChartItem?.label}
+            </Text>
+            <Text className="text-[#9A9A9A] text-base font-poppins-regular">
+              Total Spending: ${selectedBarChartItem?.value.toFixed(2)}
+            </Text>
+            <TouchableOpacity
+              className="mt-4 bg-[#3a3a3a] py-2 px-4 rounded-full"
+              onPress={() => setSelectedBarChartItem(null)}
+            >
+              <Text className="text-white text-center font-poppins-regular">
+                Close
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1a1a1a",
-  },
-  gradientBackground: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  loadingText: {
-    fontFamily: "Poppins_400Regular",
-    color: "white",
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 50,
-  },
-  errorText: {
-    fontFamily: "Poppins_400Regular",
-    color: "#FF6B6B",
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 50,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  headerText: {
-    fontFamily: "Poppins_600SemiBold",
-    fontSize: 28,
-    color: "white",
-  },
-  summaryCard: {
-    backgroundColor: "#2a2a2a",
-    borderRadius: 20,
-    marginBottom: 20,
-    elevation: 5,
-  },
-  summaryContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-  },
-  summaryItem: {
-    alignItems: "center",
-  },
-  summaryLabel: {
-    fontFamily: "Poppins_400Regular",
-    color: "#9A9A9A",
-    fontSize: 14,
-  },
-  summaryValue: {
-    fontFamily: "Poppins_600SemiBold",
-    color: "white",
-    fontSize: 20,
-    marginTop: 5,
-  },
-  chartContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 20,
-    padding: 20,
-    elevation: 5,
-  },
-  chartTitle: {
-    fontFamily: "Poppins_600SemiBold",
-    color: "white",
-    fontSize: 20,
-    marginBottom: 15,
-  },
-  legendContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 15,
-    marginBottom: 10,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 5,
-  },
-  legendText: {
-    fontFamily: "Poppins_400Regular",
-    color: "white",
-    fontSize: 12,
-  },
-  chartAxisText: {
-    fontFamily: "Poppins_400Regular",
-    color: "#9A9A9A",
-    fontSize: 10,
-  },
-  dataCard: {
-    backgroundColor: "#2a2a2a",
-    borderRadius: 20,
-    marginBottom: 15,
-    elevation: 5,
-  },
-  dataTitle: {
-    fontFamily: "Poppins_400Regular",
-    color: "#9A9A9A",
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  dataValue: {
-    fontFamily: "Poppins_600SemiBold",
-    color: "white",
-    fontSize: 20,
-  },
-  dataSubValue: {
-    fontFamily: "Poppins_400Regular",
-    color: "#9A9A9A",
-    fontSize: 14,
-    marginTop: 5,
-  },
-  transactionsList: {
-    marginTop: 20,
-  },
-  transactionsTitle: {
-    fontFamily: "Poppins_600SemiBold",
-    color: "white",
-    fontSize: 20,
-    marginBottom: 15,
-  },
-  transactionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2a2a2a",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
-    elevation: 3,
-  },
-  transactionIcon: {
-    marginRight: 15,
-  },
-  transactionDetails: {
-    flex: 1,
-  },
-  transactionCategory: {
-    fontFamily: "Poppins_600SemiBold",
-    color: "white",
-    fontSize: 16,
-  },
-  transactionDate: {
-    fontFamily: "Poppins_400Regular",
-    color: "#9A9A9A",
-    fontSize: 12,
-  },
-  transactionAmount: {
-    fontFamily: "Poppins_600SemiBold",
-    fontSize: 16,
-  },
-  incomeAmount: {
-    color: "#4ECDC4",
-  },
-  expenseAmount: {
-    color: "#FF6B6B",
-  },
-});
 
 export default FinanceOverview;
