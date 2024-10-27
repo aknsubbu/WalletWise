@@ -1,50 +1,176 @@
-# Welcome to your Expo app 👋
+<div align="center">
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+                 $ WalletWise
+     Smart Money Management Made Simple
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+[![Built with Expo](https://img.shields.io/badge/Built%20with-Expo-4630EB.svg?style=flat-square&logo=EXPO&labelColor=f3f3f3&logoColor=000)](https://expo.dev/)
+[![Uses Supabase](https://img.shields.io/badge/Uses-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Built with React Native](https://img.shields.io/badge/Built%20with-React%20Native-61dafb.svg?style=flat-square&logo=react&logoColor=white)](https://reactnative.dev/)
 
-## Learn more
+</div>
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🌟 Overview
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+WalletWise is your intelligent finance companion that transforms the way you manage money. Stop struggling with spreadsheets and manual entries - let WalletWise handle the heavy lifting while you focus on making better financial decisions.
 
-## Join the community
+### ✨ Key Features
 
-Join our community of developers creating universal apps.
+🔄 **Seamless Transaction Tracking**
+- Real-time expense monitoring
+- Automatic categorization
+- Quick-add expense interface
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+📊 **Smart Analytics**
+- Visual spending breakdowns
+- Trend analysis
+- Custom reports generation
+
+🔔 **Intelligent Alerts**
+- Customizable budget notifications
+- Spending limit warnings
+- Bill payment reminders
+
+🔒 **Bank-Grade Security**
+- End-to-end encryption
+- Secure authentication
+- Private data protection
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+```bash
+node -v # >= 12.5.1
+npm -v  # >= 6.0.0
+expo -V # >= 47.0.0
+```
+
+### Quick Start
+
+1️⃣ **Clone & Install**
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/walletwise.git
+
+# Navigate to the project
+cd walletwise
+
+# Install dependencies
+npm install
+```
+
+2️⃣ **Configure Environment**
+```bash
+# Copy the example env file
+cp .env.example .env
+
+# Add your configuration values
+nano .env
+```
+
+3️⃣ **Run Development Server**
+```bash
+# Start Expo development server
+npx expo start
+```
+
+### 📱 Building for Testing
+
+```bash
+# Build preview version
+eas build --profile preview
+```
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[Mobile App] --> B[API Layer]
+    B --> C[Database]
+    B --> D[Auth Service]
+    B --> E[Analytics Engine]
+```
+
+## 📦 Tech Stack
+
+### Frontend 🎨
+- **Framework**: React Native with Expo
+- **UI Components**: React Native Paper
+- **State Management**: React Context API
+- **Camera Integration**: Expo Camera
+
+### Backend 🛠
+- **Database**: PostgreSQL
+- **Backend as a Service**: Supabase
+- **Authentication**: Supabase Auth
+- **Storage**: Supabase Storage
+
+## 📸 Screenshots
+
+<div align="center">
+<table>
+  <tr>
+    <td><img src="/api/placeholder/200/400" alt="Home Screen" title="Home Screen"/></td>
+    <td><img src="/api/placeholder/200/400" alt="Analytics" title="Analytics"/></td>
+    <td><img src="/api/placeholder/200/400" alt="Add Expense" title="Add Expense"/></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Home Screen</strong></td>
+    <td align="center"><strong>Analytics</strong></td>
+    <td align="center"><strong>Add Expense</strong></td>
+  </tr>
+</table>
+</div>
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suite
+npm test -- -t "auth"
+```
+
+## 🤝 Contributing
+
+We love contributions! Here's how you can help:
+
+1. 🍴 Fork the repository
+2. 🌿 Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. 💾 Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
+5. 🔍 Open a Pull Request
+
+## 👥 Team
+
+Meet the brilliant minds behind WalletWise:
+
+| Name | Role | GitHub |
+|------|------|--------|
+| AnandKumar NS | Full Stack & AI Services Developer | [@anandkumar](https://github.com/anandkumar) |
+| Bragadeesh V | Backend Developer | [@bragadeesh](https://github.com/bragadeesh) |
+| M Raj Ragavender | UI/UX Designer | [@rajragavender](https://github.com/rajragavender) |
+| Naveen Ragav | Full Stack Developer | [@naveenragav](https://github.com/naveenragav) |
+| S Karthikeyan | UI/UX Engineer | [@karthikeyan](https://github.com/karthikeyan) |
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+Special thanks to:
+- Mr. J. Prakash for the invaluable guidance
+
+---
+
+<div align="center">
+
+
+[Report Bug](https://github.com/yourusername/walletwise/issues) · [Request Feature](https://github.com/yourusername/walletwise/issues)
+
+</div>
