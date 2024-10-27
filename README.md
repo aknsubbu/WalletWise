@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
 
 <h2 align="center">
@@ -167,3 +168,5 @@ Special thanks to:
 [Report Bug](https://github.com/yourusername/walletwise/issues) · [Request Feature](https://github.com/yourusername/walletwise/issues)
 
 </div>
+=======
+>>>>>>> e4108aa (edits)

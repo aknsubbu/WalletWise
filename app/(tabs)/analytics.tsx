@@ -433,6 +433,8 @@ const FinanceOverview = () => {
               noOfSections={5}
               maxValue={Math.max(...barChartData.map((item) => item.value))}
               onPress={onBarChartPress}
+              height={200} // Add a fixed height
+              width={300} // Add a fixed width
             />
           </View>
 

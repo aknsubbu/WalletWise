@@ -15,25 +15,22 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses the device location to determine the eligibility of the user",
         "NSContactsUsageDescription": "This app uses the user contacts to verify the user before rendering any service",
         "NSCameraUsageDescription": "This app uses the camera to take pictures"
-      }
+      },
+      "bundleIdentifier": "com.aknsubbu.spd"
     },
     "android": {
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "SEND_SMS",
-        "RECEIVE_SMS",
-        "READ_SMS",
-        "WRITE_SMS",
-        "READ_CONTACTS"
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.aknsubbu.spd"
     },
     "web": {
       "bundler": "metro",
@@ -48,12 +45,6 @@
         }
       ],
       [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
-        }
-      ],
-      [
         "expo-camera",
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
@@ -64,6 +55,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "478799b6-620a-49ab-98b6-1fd17cb145e9"
+      }
     }
   }
 }
