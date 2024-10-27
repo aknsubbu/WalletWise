@@ -6,8 +6,7 @@
 ```plaintext
        ╔══════════════════════════════════════════════════════════════╗             
        ║                                                              ║             
-       ║                         $ WalletWise                         ║             
-       
+       ║                         $ WalletWise                         ║            
        ║                 Smart way to manage smart money              ║             
        ║                                                              ║             
        ╚══════════════════════════════════════════════════════════════╝             
@@ -117,22 +116,7 @@ graph TD
 - **Authentication**: Supabase Auth
 - **Storage**: Supabase Storage
 
-## 📸 Screenshots
 
-<div align="center">
-<table>
-  <tr>
-    <td><img src="/api/placeholder/200/400" alt="Home Screen" title="Home Screen"/></td>
-    <td><img src="/api/placeholder/200/400" alt="Analytics" title="Analytics"/></td>
-    <td><img src="/api/placeholder/200/400" alt="Add Expense" title="Add Expense"/></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Home Screen</strong></td>
-    <td align="center"><strong>Analytics</strong></td>
-    <td align="center"><strong>Add Expense</strong></td>
-  </tr>
-</table>
-</div>
 
 ## 🧪 Testing
 
