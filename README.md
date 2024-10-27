@@ -1,12 +1,19 @@
 <div align="center">
 
-<h1 align='center'>
-  ```
-                 $ WalletWise
-     Smart Money Management Made Simple
-```
+<h2 align="center">
 
+  
+```plaintext
+       ╔══════════════════════════════════════════════════════════════╗             
+       ║                                                              ║             
+       ║                         $ WalletWise                         ║             
+       
+       ║                 Smart way to manage smart money              ║             
+       ║                                                              ║             
+       ╚══════════════════════════════════════════════════════════════╝             
+```
 </h1>
+
 [![Built with Expo](https://img.shields.io/badge/Built%20with-Expo-4630EB.svg?style=flat-square&logo=EXPO&labelColor=f3f3f3&logoColor=000)](https://expo.dev/)
 [![Uses Supabase](https://img.shields.io/badge/Uses-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 [![Built with React Native](https://img.shields.io/badge/Built%20with-React%20Native-61dafb.svg?style=flat-square&logo=react&logoColor=white)](https://reactnative.dev/)
