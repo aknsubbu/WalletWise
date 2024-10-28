@@ -145,11 +145,11 @@ Meet the brilliant minds behind WalletWise:
 
 | Name | Role | GitHub |
 |------|------|--------|
-| AnandKumar NS | Full Stack & AI Services Developer | [@anandkumar](https://github.com/anandkumar) |
-| Bragadeesh V | Backend Developer | [@bragadeesh](https://github.com/bragadeesh) |
-| M Raj Ragavender | UI/UX Designer | [@rajragavender](https://github.com/rajragavender) |
-| Naveen Ragav | Full Stack Developer | [@naveenragav](https://github.com/naveenragav) |
-| S Karthikeyan | UI/UX Engineer | [@karthikeyan](https://github.com/karthikeyan) |
+| AnandKumar NS | Full Stack & AI Services Developer | [@anandkumar](https://github.com/aknsubbu) |
+| Bragadeesh V | Backend Developer | [@bragadeesh](https://github.com/BRAGADEESH2005) |
+| M Raj Ragavender | UI/UX Designer | [@rajragavender](https://github.com/RajubhaiG) |
+| Naveen Ragav | Full Stack Developer | [@naveenragav](https://github.com/Naveenragav2005) |
+| S Karthikeyan | UI/UX Engineer | [@karthikeyan](https://github.com/Karthikeyansivarasu) |
 
 ## 📜 License
 
