@@ -53,7 +53,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      {session && session.user ? (
+      {/* {session && session.user ? (
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
@@ -66,7 +66,11 @@ export default function RootLayout() {
             <SignIn onSignUp={() => setShowSignUp(true)} />
           )}
         </View>
-      )}
+      )} */}
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
     </ThemeProvider>
   );
 }
